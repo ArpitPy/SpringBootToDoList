@@ -33,23 +33,21 @@ public class TaskController {
     //get tasks by id
     @GetMapping("/{id}")
     public ResponseEntity<Task> getTaskById(@PathVariable String id) {
-        return taskService.getTaskById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        Task task = taskService.getTaskByIdOrThrow(id);
+        return ResponseEntity.ok(task);
     }
 
     //update task by id
     @PutMapping("/{id}")
     public ResponseEntity<Task> updateTask(@PathVariable String id, @RequestBody Task request) {
-        return taskService.updateTask(id, request.getTitle(), request.getDescrpition(), request.isCompleted())
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        Task updated = taskService.updateTask(id, request.getTitle(), request.getDescrpition(), request.isCompleted());
+        return ResponseEntity.ok(updated);
     }
 
     //delete a task
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteTask(@PathVariable String id) {
-        boolean deleted = taskService.deleteTask(id);
-        return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
+        taskService.deleteTask(id);
+        return ResponseEntity.noContent().build();
     }
 }

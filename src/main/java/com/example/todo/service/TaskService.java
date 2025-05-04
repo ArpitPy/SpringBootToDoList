@@ -1,5 +1,6 @@
 package com.example.todo.service;
 
+import com.example.todo.exception.TaskNotFoundException;
 import com.example.todo.model.Task;
 import org.springframework.stereotype.Service;
 
@@ -8,6 +9,15 @@ import java.util.*;
 @Service
 public class TaskService {
     private final Map<String, Task> taskMap = new HashMap<>();
+
+    //error handling
+    public Task getTaskByIdOrThrow(String id) {
+        Task task = taskMap.get(id);
+        if (task == null) {
+            throw new TaskNotFoundException(id);
+        }
+        return task;
+    }
 
     //create a new task
     public Task createTask(String title, String description) {
@@ -27,19 +37,17 @@ public class TaskService {
     }
 
     //update tasks by id
-    public Optional<Task> updateTask(String id, String title, String description, boolean completed) {
-        Task task = taskMap.get(id);
-        if (task != null) {
-            task.setTitle(title);
-            task.setDescrpition(description);
-            task.setCompleted(completed);
-            return Optional.of(task);
-        }
-        return Optional.empty();
+    public Task updateTask(String id, String title, String description, boolean completed) {
+        Task task = getTaskByIdOrThrow(id);
+        task.setTitle(title);
+        task.setDescrpition(description);
+        task.setCompleted(completed);
+        return task;
     }
 
     //delete task
-    public boolean deleteTask(String id) {
-        return taskMap.remove(id) != null;
+    public void deleteTask(String id) {
+        Task task = getTaskByIdOrThrow(id);
+        taskMap.remove(id);
     }
 }
