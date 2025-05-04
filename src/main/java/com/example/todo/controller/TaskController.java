@@ -2,9 +2,12 @@ package com.example.todo.controller;
 
 import com.example.todo.model.Task;
 import com.example.todo.service.TaskService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.example.todo.dto.TaskRequestDTO;
+import com.example.todo.dto.TaskResponseDTO;
 
 import java.util.*;
 
@@ -19,29 +22,59 @@ public class TaskController {
 
     //create task
     @PostMapping
-    public ResponseEntity<Task> createTask(@RequestBody Task request) {
-        Task created = taskService.createTask(request.getTitle(), request.getDescrpition());
-        return new ResponseEntity<>(created, HttpStatus.CREATED);
+    public ResponseEntity<TaskResponseDTO> createTask(@Valid @RequestBody TaskRequestDTO request) {
+        Task task = taskService.createTask(request.getTitle(), request.getDescrpition());
+        TaskResponseDTO response = new TaskResponseDTO(
+                task.getId(),
+                task.getTitle(),
+                task.getDescrpition(),
+                task.isCompleted(),
+                task.getCreatedAt().toString()
+        );
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     //get all tasks
     @GetMapping
-    public ResponseEntity<List<Task>> getAllTasks() {
-        return ResponseEntity.ok(taskService.getAllTasks());
+    public ResponseEntity<List<TaskResponseDTO>> getAllTasks() {
+        List<TaskResponseDTO> response = taskService.getAllTasks().stream().map(
+                task -> new TaskResponseDTO(
+                        task.getId(),
+                        task.getTitle(),
+                        task.getDescrpition(),
+                        task.isCompleted(),
+                        task.getCreatedAt().toString()
+                )
+        ).toList();
+        return ResponseEntity.ok(response);
     }
 
     //get tasks by id
     @GetMapping("/{id}")
-    public ResponseEntity<Task> getTaskById(@PathVariable String id) {
+    public ResponseEntity<TaskResponseDTO> getTaskById(@PathVariable String id) {
         Task task = taskService.getTaskByIdOrThrow(id);
-        return ResponseEntity.ok(task);
+        TaskResponseDTO response = new TaskResponseDTO(
+                task.getId(),
+                task.getTitle(),
+                task.getDescrpition(),
+                task.isCompleted(),
+                task.getCreatedAt().toString()
+        );
+        return ResponseEntity.ok(response);
     }
 
     //update task by id
     @PutMapping("/{id}")
-    public ResponseEntity<Task> updateTask(@PathVariable String id, @RequestBody Task request) {
-        Task updated = taskService.updateTask(id, request.getTitle(), request.getDescrpition(), request.isCompleted());
-        return ResponseEntity.ok(updated);
+    public ResponseEntity<TaskResponseDTO> updateTask(@PathVariable String id, @Valid @RequestBody TaskRequestDTO request) {
+        Task task = taskService.updateTask(id, request.getTitle(), request.getDescrpition(), request.isCompleted());
+        TaskResponseDTO response = new TaskResponseDTO(
+                task.getId(),
+                task.getTitle(),
+                task.getDescrpition(),
+                task.isCompleted(),
+                task.getCreatedAt().toString()
+        );
+        return ResponseEntity.ok(response);
     }
 
     //delete a task
